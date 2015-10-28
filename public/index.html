@@ -8,12 +8,24 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-        <!-- <link rel="stylesheet" href="css/main.css"> -->
+        <script src='/jquery-ui-1.11.4/jquery-ui.min.js' ></script>
+        <link href="/jquery-ui-1.11.4/jquery-ui.min.css">
+        <link href="/jquery-ui-1.11.4/jquery-ui.structure.min.css">
         <style type="text/css">
             .borders { 
                 border: 1px solid black; 
                 width: 15em;
                 height: 15em;
+                background-image: url('/img/grass2.jpeg');
+                background-size: cover;
+            }
+            .borders img {
+                max-height: 90%;
+                padding-bottom: 20%;
+            }
+            .row { 
+                margin: auto;
+                max-width: 700px;
             }
         </style>
     </head>
@@ -21,22 +33,29 @@
         <div class="container">
             <div class="jumbotron">
                 <div class="row">
-                    <div class="col-md-4 borders" id='a1'></div>
-                    <div class="col-md-4 borders" id='b1'></div>
-                    <div class="col-md-4 borders" id='c1'></div>
+                    <div class="col-md-4 borders" id='a1'><img class='gopher' src='/img/gopher4-1.png' > </div>
+                    <div class="col-md-4 borders" id='b1'><img class='gopher' src='/img/gopher4-1.png' > </div>
+                    <div class="col-md-4 borders" id='c1'><img class='gopher' src='/img/gopher4-1.png' > </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4 borders" id='a2'></div>
-                    <div class="col-md-4 borders" id='b2'></div>
-                    <div class="col-md-4 borders" id='c2'></div>
+                    <div class="col-md-4 borders" id='a2'><img class='gopher' src='/img/gopher4-1.png' > </div>
+                    <div class="col-md-4 borders" id='b2'><img class='gopher' src='/img/gopher4-1.png' > </div>
+                    <div class="col-md-4 borders" id='c2'><img class='gopher' src='/img/gopher4-1.png' > </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4 borders" id='a3'></div>
-                    <div class="col-md-4 borders" id='b3'></div>
-                    <div class="col-md-4 borders" id='c3'></div>
+                    <div class="col-md-4 borders" id='a3'><img class='gopher' src='/img/gopher4-1.png' > </div>
+                    <div class="col-md-4 borders" id='b3'><img class='gopher' src='/img/gopher4-1.png' > </div>
+                    <div class="col-md-4 borders" id='c3'><img class='gopher' src='/img/gopher4-1.png' > </div>
                 </div>
             </div>
         </div>
-        <script src="js/main.js"></script>
+        <script>
+            $('.borders').on('click', function() {
+                if($('.gopher').click(event, function (){
+                    console.log(event);
+                    console.log(event.path[1].id);
+                }));
+            })
+        </script>
     </body>
 </html>
