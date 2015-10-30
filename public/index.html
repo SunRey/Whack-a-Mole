@@ -16,8 +16,11 @@
                 background-image: url('/img/grass2.jpeg');
                 background-position: -10px 2px;
             }
-            #timer {
+            .stat-house {
                 float: left;
+            }
+            .stats {
+                list-style: none;
             }
             .row { 
                 margin: auto;
@@ -36,7 +39,14 @@
         <div class="container">
             <button class='btn btn-info'>Test Hide or Show</button>
             <div class="jumbotron">
-                <div id="timer"></div>
+                <div class='stat-house'>
+                    <ul class='stats'>
+                        <li>Time left: <span id='timer'>0:00</span></li>
+                        <li>Hit #: <span id='hits'>?</span></li>
+                        <li>Missed #: <span id='missed'>?</span></li>
+                        <li>Accuracy: <span id='accuracy'>?</span> %</li>
+                    </ul>
+                </div>
                 <div class="row">
                     <div class="col-md-4 borders" data-id='a1'><img class='gophers' id='a1' src='/img/gopher4-1.png' > </div>
                     <div class="col-md-4 borders" data-id='b1'><img class='gophers' id='b1' src='/img/gopher4-1.png' > </div>
@@ -92,92 +102,99 @@
                     this.showGopher(id);
                     setTimeout(function () {
                         $('#' + id).hide('drop', { direction: "down" } , "fast");
+                        scoreKeeper.nearMiss();
                     }, time);
                 },
                 runGopher: function () {
                     var time = this.randomTimeOut(),
                         gopherId = this.returnGopher();
                     this.showHideGopher(gopherId, time);
+                    scoreKeeper.countAllGophers();
                     return time;
                 }
-            };
-            var intervalSetup = {
+            },
+            intervalSetup = {
                 rounds: 0,
                 roundsDuration: [45, 30, 25, 15],
                 gameTimer: function (duration, display) {
                     var timer = duration, seconds;
-                    setInterval(function () {
+                    var intervalId = setInterval(function () {
                         seconds = parseInt(timer % 60, 10);
                         seconds = seconds < 10 ? "0" + seconds : seconds;
                         
+                        display.text('0:' + seconds);
+                        timer--;
+
+                        if (timer < 0) {
+                           clearInterval(intervalId);
+                           scoreKeeper.calcScore();
+                        }
                         gopherControl.runGopher();
 
-                        display.text('0:' + seconds);
-
-                        if (--timer < 0) {
-                           clearInterval(setInterval);
-                        }
-                    }, 950);
+                    }, 955);
                 },
                 callTimer: function() {
                     var display = $('#timer');
                     var duration = this.roundsDuration[3];
                     this.gameTimer(duration, display);
+                },
+                whichTimer: function() {
+                    if (this.rounds <= 2) {
+                        return this.roundsDuration[0];
+                    } else if (this.rounds < 5) {
+                        return this.roundsDuration[1];
+                    } else if (this.rounds < 8) {
+                        return this.roundsDuration[2]; 
+                    } else {
+                        return this.roundsDuration[3];
+                    }
+                }
+            },
+            scoreKeeper = {
+                hitCount: 0,
+                missCount: 0,
+                totalGophers:0,
+                gotHit: function() {
+                    scoreKeeper.hitCount++;
+                    $('#hits').text(this.hitCount);
+                    console.log(this.hitCount + ' HIT HIT');
+                },
+                nearMiss: function() {
+                    scoreKeeper.missCount++;
+                    $('#missed').text(this.missCount);
+                    console.log(this.missCount + ' MISS MISS');
+                },
+                countAllGophers: function() {
+                    scoreKeeper.totalGophers++;
+                },
+                calcScore: function () {
+                    var hits = this.hitCount,
+                        misses = this.missCount,
+                        total = this.totalGophers;
+                    $('#accuracy').text(Math.round(total/hits));
                 }
             };
-            // function startTimer(duration, display) {
-            // var timer = duration, minutes, seconds;
-            // setInterval(function () {
-            // minutes = parseInt(timer / 60, 10);
-            // seconds = parseInt(timer % 60, 10);
 
-            // minutes = minutes < 10 ? "0" + minutes : minutes;
-            // seconds = seconds < 10 ? "0" + seconds : seconds;
-
-            // display.text(minutes + ":" + seconds);
-
-            // if (--timer < 0) {
-            // timer = duration;
-            // }
-            // }, 1000);
-            // }
-            // jQuery(function ($) {
-            // var fiveMinutes = 60 * 5,
-            // display = $('#time');
-            // startTimer(fiveMinutes, display);
-            // });
+            function randomNumberGet (max, min) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }            
             // <span id="time"></span>
 
             $('.gophers').on('click', function (event) {
                 event.stopPropagation();
                 console.log(this.id);
                 gopherControl.hideGopherHit(this.id);
-                // clearInterval(gopherInterval);
-                // startMotion();
-
+                scoreKeeper.gotHit();
             });
 
             $('.borders').on('click', function (event){
                 console.log($(this).data('id'));
                 gopherControl.hideGopherMiss($(this).data('id'))
+                scoreKeeper.nearMiss();
             });
             
-            function randomNumberGet (max, min) {
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-            }            
-
-            function callGopherInterval (id) {
-                gopherInterval = setInterval(function () {
-                    showHideGopher(id);
-                }, 2000);                
-            }
-
-            function startMotion () {
-                var id = selectRandomDiv();
-                callGopherInterval(id); 
-            }
             $('.btn').on('click', function () {
-                gopherControl.runGopher();
+                intervalSetup.callTimer();
             });
 
             var gridInfo = {
@@ -196,89 +213,6 @@
                     return this.randomCage();
                 }
             };
-
-
-            // var missGopher = $(this).children().first();
-            // missGopher.hide('drop', { direction: "down" }, "fast");
-            // console.log(missGopher);
-            // clearInterval(gopherInterval);
-            // startMotion();
-            // function showHideGopher(id) {
-            //     var gopher = $("[data-id='" + id +"'] > img");
-            //     console.log(gopher);                
-            //     gopher.show('blind', { direction: "down" } , "fast");
-            //     setTimeout(function () {
-            //         gopher.hide('drop', { direction: "down" } , "fast");
-            //         clearInterval(gopherInterval);
-            //         startMotion();
-            //     }, 1000);
-            // }
-            // function getDivIdArray () {
-            //     var divIds = [];
-            //     $('.borders').toArray().forEach(function (array) {
-            //         divIds.push(array.dataset.id);
-            //     });
-            //     console.log(divIds);
-            //     return divIds;                
-            // }
-
-            // function selectRandomDiv () {
-            //     var ids = getDivIdArray();
-            //     var random = randomNumberGet(ids.length - 1);
-            //     console.log(ids[random]);
-            //     return ids[random];
-            // }
-
-
-            // function offCallGopherInterval
-
-                // showHideGopher(id);
-                // $('.gopher').hide();
-                // $('.gopher').css({
-                //     'pointer-events': 'none;',
-                //     opacity: '0'
-                // });
-                        // function hideGopherTimeout (id) {
-            //     $("[data-id=" + id).children().hide('drop', { direction: "down" } , "fast");
-            //     clearInterval(gopherInterval);
-            // }
-            // hideGopherMiss($(this).parent().data('id'));
-            // $('.borders').on('click', function() {
-            //     console.log($(this).children());
-            //     $(this).children().show('blind', { direction: "up" }, "slow")
-            // });
-                    // var id = $(this).parent[0].id;
-                    // var gopherObject = $(this);
-                    // $(this).data({'id': id}); //this should be used within the click event if needed
-                    // console.log(event.path[1].id);
-
-                    // console.log(id);
-                    // console.log($(this).parent()[0].id);
-                    // $(this).data({'id' : $(this).parent()[0].id });
-                    // console.log($(this).data('id'));
-                    // console.log('click funk');
-                // $(this).id.children().css({
-                //     'pointer-events': 'auto'
-                // }).animate({
-                //     opacity: '1'
-                // }, 500);
-            
-
-                // $('#' + tiles[tile]).css({
-                //     'pointer-events': 'auto;'
-                // }).animate({
-                //     opacity: '1'
-                // }, 500);
-                // $('#' + tiles[tile]).children().animate({
-                //     opacity: '1'
-                // }, 500);
-                // $('#' + tiles[tile]).children().css({'pointer-events' : 'auto'});
-                // console.log(tile);
-                // console.log($('#' + tiles[tile] + ' > img'));
-                // $('#' + tiles[tile] + ' > .gopher').show();
-
-
-
         </script>
     </body>
 </html>
