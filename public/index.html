@@ -21,6 +21,7 @@
             }
             .stats {
                 list-style: none;
+                padding: 0px;
             }
             .row { 
                 margin: auto;
@@ -37,14 +38,15 @@
     </head>
     <body>
         <div class="container">
-            <button class='btn btn-info'>Test Hide or Show</button>
+            <button class='btn btn-info'>Start</button>
             <div class="jumbotron">
                 <div class='stat-house'>
                     <ul class='stats'>
                         <li>Time left: <span id='timer'>0:00</span></li>
-                        <li>Hit #: <span id='hits'>?</span></li>
-                        <li>Missed #: <span id='missed'>?</span></li>
-                        <li>Accuracy: <span id='accuracy'>?</span> %</li>
+                        <li>Total Gophers: <span id="total-gophers">0</span></li>
+                        <li>Hit #: <span id='hits'>0</span></li>
+                        <li>Missed #: <span id='missed'>0</span></li>
+                        <li>Accuracy: <span id='accuracy'>100</span> %</li>
                     </ul>
                 </div>
                 <div class="row">
@@ -71,7 +73,7 @@
         "use strict";
             var gopherControl = {
                 gophersArray: [],
-                randomGopherId: function() {
+                randomGopherId: function() { 
                     var randomGopher = randomNumberGet(this.gophersArray.length - 1, 1);
                     return this.gophersArray[randomGopher];
                 },
@@ -89,27 +91,36 @@
                 },
                 showGopher: function (id) {
                     $('#' + id).show('blind', { direction: "down" } , "fast");
+                    $('#' + id).addClass('active');
                 },
                 hideGopherHit: function (id) {
-                    $('#' + id).hide('puff', "fast"); 
+                    if ($('#' + id).hasClass('active')) {
+                        $('#' + id).removeClass('active');
+                        $('#' + id).hide('puff', "fast");
+                        scoreKeeper.gotHit();                        
+                    }
                 },
                 hideGopherMiss: function (id) {
-                    $('#' + id).hide('drop', { direction: "down" } , "fast");
+                    if ($('#' + id).hasClass('active')) {
+                        $('#' + id).removeClass('active');
+                        $('#' + id).hide('drop', { direction: "down" } , "fast");
+                        scoreKeeper.nearMiss();
+                    }
                 },
                 showHideGopher: function(id, time) {
                     console.log(id);
                     console.log(time);
                     this.showGopher(id);
                     setTimeout(function () {
-                        $('#' + id).hide('drop', { direction: "down" } , "fast");
-                        scoreKeeper.nearMiss();
+                        gopherControl.hideGopherMiss(id);
+                        // $('#' + id).hide('drop', { direction: "down" } , "fast");
                     }, time);
                 },
                 runGopher: function () {
                     var time = this.randomTimeOut(),
                         gopherId = this.returnGopher();
-                    this.showHideGopher(gopherId, time);
                     scoreKeeper.countAllGophers();
+                    this.showHideGopher(gopherId, time);
                     return time;
                 }
             },
@@ -117,7 +128,7 @@
                 rounds: 0,
                 roundsDuration: [45, 30, 25, 15],
                 gameTimer: function (duration, display) {
-                    var timer = duration, seconds;
+                    var timer = duration, seconds; // seconds var is undefined
                     var intervalId = setInterval(function () {
                         seconds = parseInt(timer % 60, 10);
                         seconds = seconds < 10 ? "0" + seconds : seconds;
@@ -157,40 +168,38 @@
                 gotHit: function() {
                     scoreKeeper.hitCount++;
                     $('#hits').text(this.hitCount);
-                    console.log(this.hitCount + ' HIT HIT');
                 },
                 nearMiss: function() {
                     scoreKeeper.missCount++;
                     $('#missed').text(this.missCount);
-                    console.log(this.missCount + ' MISS MISS');
                 },
                 countAllGophers: function() {
                     scoreKeeper.totalGophers++;
+                    $('#total-gophers').text(this.totalGophers);
                 },
-                calcScore: function () {
+                newRoundReset: function() {
+                    this.hitCount = 0;
+                    this.missCount = 0;
+                },
+                calcScore: function() {
                     var hits = this.hitCount,
                         misses = this.missCount,
                         total = this.totalGophers;
-                    $('#accuracy').text(Math.round(total/hits));
+                    $('#accuracy').text(Math.round((hits/total)*100));
                 }
             };
 
             function randomNumberGet (max, min) {
                 return Math.floor(Math.random() * (max - min + 1)) + min;
             }            
-            // <span id="time"></span>
 
             $('.gophers').on('click', function (event) {
                 event.stopPropagation();
-                console.log(this.id);
                 gopherControl.hideGopherHit(this.id);
-                scoreKeeper.gotHit();
             });
 
             $('.borders').on('click', function (event){
-                console.log($(this).data('id'));
                 gopherControl.hideGopherMiss($(this).data('id'))
-                scoreKeeper.nearMiss();
             });
             
             $('.btn').on('click', function () {
