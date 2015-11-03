@@ -18,6 +18,9 @@
             }
             .stat-house {
                 float: left;
+                border: 1px solid #000;
+                border-radius: 5%;
+                width: 7em;
             }
             .stats {
                 list-style: none;
@@ -43,6 +46,7 @@
                 <div class='stat-house'>
                     <ul class='stats'>
                         <li>Time left: <span id='timer'>0:00</span></li>
+                        <li>Round: <span id="rounds">0</span></li>
                         <li>Total Gophers: <span id="total-gophers">0</span></li>
                         <li>Hit #: <span id='hits'>0</span></li>
                         <li>Missed #: <span id='missed'>0</span></li>
@@ -87,7 +91,8 @@
                     return this.randomGopherId();
                 },
                 randomTimeOut: function () {
-                    return randomNumberGet(1250, 450);
+                    var timeArray = timersForGame.whichGopherTimeSet();
+                    return randomNumberGet(timeArray[0], timeArray[1]);
                 },
                 showGopher: function (id) {
                     $('#' + id).show('blind', { direction: "down" } , "fast");
@@ -113,7 +118,6 @@
                     this.showGopher(id);
                     setTimeout(function () {
                         gopherControl.hideGopherMiss(id);
-                        // $('#' + id).hide('drop', { direction: "down" } , "fast");
                     }, time);
                 },
                 runGopher: function () {
@@ -124,9 +128,7 @@
                     return time;
                 }
             },
-            intervalSetup = {
-                rounds: 0,
-                roundsDuration: [45, 30, 25, 15],
+            timersForGame = {                
                 gameTimer: function (duration, display) {
                     var timer = duration, seconds; // seconds var is undefined
                     var intervalId = setInterval(function () {
@@ -143,21 +145,42 @@
                         gopherControl.runGopher();
 
                     }, 955);
+
+                    scoreKeeper.roundCountDisplay();
                 },
                 callTimer: function() {
                     var display = $('#timer');
-                    var duration = this.roundsDuration[3];
+                    var duration = this.whichGameTimer();
+                    console.log(duration);
                     this.gameTimer(duration, display);
                 },
-                whichTimer: function() {
-                    if (this.rounds <= 2) {
-                        return this.roundsDuration[0];
-                    } else if (this.rounds < 5) {
-                        return this.roundsDuration[1];
-                    } else if (this.rounds < 8) {
-                        return this.roundsDuration[2]; 
+                gameTimeLength: [45, 30, 25, 15],
+                whichGameTimer: function() {
+                    if (scoreKeeper.rounds < 2) {
+                        return this.gameTimeLength[0];
+                    } else if (scoreKeeper.rounds < 5) {
+                        return this.gameTimeLength[1];
+                    } else if (scoreKeeper.rounds < 8) {
+                        return this.gameTimeLength[2]; 
                     } else {
-                        return this.roundsDuration[3];
+                        return this.gameTimeLength[3];
+                    }
+                },
+                gophersAnimeTimeSets: {
+                    slow: [1300, 650],
+                    medium: [1100, 550],
+                    fast: [1000, 450],
+                    crazy: [850, 350]
+                },                
+                whichGopherTimeSet: function() {
+                    if (scoreKeeper.rounds <= 2) {
+                        return this.gophersAnimeTimeSets.slow;
+                    } else if (scoreKeeper.rounds <= 4) {
+                        return this.gophersAnimeTimeSets.medium;
+                    } else if (scoreKeeper.rounds <= 7) {
+                        return this.gophersAnimeTimeSets.fast; 
+                    } else {
+                        return this.gophersAnimeTimeSets.crazy;
                     }
                 }
             },
@@ -165,6 +188,7 @@
                 hitCount: 0,
                 missCount: 0,
                 totalGophers:0,
+                rounds: 0,                
                 gotHit: function() {
                     scoreKeeper.hitCount++;
                     $('#hits').text(this.hitCount);
@@ -177,9 +201,17 @@
                     scoreKeeper.totalGophers++;
                     $('#total-gophers').text(this.totalGophers);
                 },
+                roundCountDisplay: function() {
+                    this.rounds++;
+                    $('#rounds').text(this.rounds);
+                },
                 newRoundReset: function() {
                     this.hitCount = 0;
                     this.missCount = 0;
+                },
+                gameReset: function() {
+                    newRoundReset();
+                    this.rounds = 0;
                 },
                 calcScore: function() {
                     var hits = this.hitCount,
@@ -203,7 +235,7 @@
             });
             
             $('.btn').on('click', function () {
-                intervalSetup.callTimer();
+                timersForGame.callTimer();
             });
 
             var gridInfo = {
