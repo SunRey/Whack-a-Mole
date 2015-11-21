@@ -20,21 +20,30 @@
                 float: left;
                 border: 1px solid #000;
                 border-radius: 5%;
-                width: 7em;
+                width: 65%;
+                margin-left: 14%;
             }
             .stats {
                 list-style: none;
+                display: inline-flex;
                 padding: 0px;
+                width: 100%;.
             }
             .row { 
                 margin: auto;
                 max-width: 700px;
+                clear: both;
             }
             .gophers {
                 max-height: 65%;
                 position: relative;
                 top: 0%;
                 display: none;
+            }
+            .jumbotron { padding-top: 10px; }
+            .lies { 
+                display: inline-block;
+                padding: 0px 2%;
             }
 
         </style>
@@ -45,12 +54,12 @@
             <div class="jumbotron">
                 <div class='stat-house'>
                     <ul class='stats'>
-                        <li>Time left: <span id='timer'>0:00</span></li>
-                        <li>Round: <span id="rounds">0</span></li>
-                        <li>Total Gophers: <span id="total-gophers">0</span></li>
-                        <li>Hit #: <span id='hits'>0</span></li>
-                        <li>Missed #: <span id='missed'>0</span></li>
-                        <li>Accuracy: <span id='accuracy'>100</span> %</li>
+                        <li class='lies'>Time left: <span id='timer'>0:00</span></li>
+                        <li class='lies'>Round: <span id="rounds">0</span></li>
+                        <li class='lies'>Hit #: <span id='hits'>0</span></li>
+                        <li class='lies'>Missed #: <span id='missed'>0</span></li>
+                        <li class='lies'>Total Gophers: <span id="total-gophers">0</span></li>
+                        <li class='lies'>Accuracy: <span id='accuracy'>100</span> %</li>
                     </ul>
                 </div>
                 <div class="row">
@@ -113,8 +122,6 @@
                     }
                 },
                 showHideGopher: function(id, time) {
-                    console.log(id);
-                    console.log(time);
                     this.showGopher(id);
                     setTimeout(function () {
                         gopherControl.hideGopherMiss(id);
@@ -140,7 +147,6 @@
 
                         if (timer < 0) {
                            clearInterval(intervalId);
-                           scoreKeeper.calcScore();
                         }
                         gopherControl.runGopher();
 
@@ -151,7 +157,6 @@
                 callTimer: function() {
                     var display = $('#timer');
                     var duration = this.whichGameTimer();
-                    console.log(duration);
                     this.gameTimer(duration, display);
                 },
                 gameTimeLength: [45, 30, 25, 15],
@@ -168,9 +173,9 @@
                 },
                 gophersAnimeTimeSets: {
                     slow: [1300, 650],
-                    medium: [1100, 550],
-                    fast: [1000, 450],
-                    crazy: [850, 350]
+                    medium: [1050, 500],
+                    fast: [900, 400],
+                    crazy: [800, 300]
                 },                
                 whichGopherTimeSet: function() {
                     if (scoreKeeper.rounds <= 2) {
@@ -188,6 +193,7 @@
                 hitCount: 0,
                 missCount: 0,
                 totalGophers:0,
+                accuracy: 0,
                 rounds: 0,                
                 gotHit: function() {
                     scoreKeeper.hitCount++;
@@ -200,6 +206,13 @@
                 countAllGophers: function() {
                     scoreKeeper.totalGophers++;
                     $('#total-gophers').text(this.totalGophers);
+                    this.accuracyDisplay();
+                },
+                accuracyDisplay: function() {
+                    var hits = this.hitCount,
+                        misses = this.missCount,
+                        total = this.totalGophers;
+                    $('#accuracy').text(Math.round((hits/total)*100));
                 },
                 roundCountDisplay: function() {
                     this.rounds++;
@@ -213,11 +226,24 @@
                     newRoundReset();
                     this.rounds = 0;
                 },
-                calcScore: function() {
-                    var hits = this.hitCount,
-                        misses = this.missCount,
-                        total = this.totalGophers;
-                    $('#accuracy').text(Math.round((hits/total)*100));
+                scoreHistory: {
+                    hits: 0,
+                    misses: 0,
+                    totalGopherHistory: 0,
+                    roundAccuracy: [],
+                    accumulation: function(hits, misses, totals, accuracy) {
+                        this.hits.push(hits);
+                        this.misses.push(misses);
+                        this.totalGopherHistory.push(totals);
+                        this.roundAccuracy.push(accuracy);
+                    },
+                    resetHistory: function() {
+                        console.log(this);
+                        // this.hits = [];
+                        // this.misses = [];
+                        // this.totalGopherHistory = [];
+                        // this.roundAccuracy = [];
+                    }
                 }
             };
 
@@ -238,22 +264,22 @@
                 timersForGame.callTimer();
             });
 
-            var gridInfo = {
-                cages: [],
-                randomCage: function() {
-                    var cage = randomNumberGet(this.cages.length - 1, 1);
-                    return this.cages[cage];
-                },
-                getCages: function() { 
-                    $('.borders').toArray().forEach(function (array) {
-                        gridInfo.cages.push(array.dataset.id);
-                    });
-                },
-                returnCage: function() {
-                    this.getCages();
-                    return this.randomCage();
-                }
-            };
+            // var gridInfo = {
+            //     cages: [],
+            //     randomCage: function() {
+            //         var cage = randomNumberGet(this.cages.length - 1, 1);
+            //         return this.cages[cage];
+            //     },
+            //     getCages: function() { 
+            //         $('.borders').toArray().forEach(function (array) {
+            //             gridInfo.cages.push(array.dataset.id);
+            //         });
+            //     },
+            //     returnCage: function() {
+            //         this.getCages();
+            //         return this.randomCage();
+            //     }
+            // };
         </script>
     </body>
 </html>
